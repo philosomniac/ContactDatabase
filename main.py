@@ -40,12 +40,6 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-# def get_user(db, username: str):
-#     if username in db:
-#         user_dict = db[username]
-#         return models.UserInDB(**user_dict)
-
-
 def authenticate_user(username: str, password: str, db: Session = Depends(get_db)):
     user = crud.get_user(db, username)
     if not user:
@@ -64,11 +58,6 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
-
-
-# def fake_decode_token(token):
-#     user = get_user(fake_users_db, token)
-#     return user
 
 
 async def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
