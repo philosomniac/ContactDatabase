@@ -39,3 +39,4 @@ def test_add_contact():
     }
     response = client.post("/contacts/", json=testcontact)
     assert response.status_code == 200
+    assert all(key in testcontact.keys() for key in response.json().keys())
