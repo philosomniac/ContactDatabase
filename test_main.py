@@ -17,18 +17,17 @@ def test_read_contact1():
     response = client.get("/contacts/1")
     assert response.status_code == 200
     json = response.json()
-    assert json["first_name"] == "Clark"
-    assert json["last_name"] == "Kent"
-    assert json["address"] == "123 main st"
-    assert json["email"] == "ckent@email.com"
-    assert json["city"] == "Metropolis"
-    assert json["state"] == "NY"
-    assert json["zip_code"] == "54321"
+    assert json["first_name"] is not None
+    assert json["last_name"] is not None
+    assert json["address"] is not None
+    assert json["email"] is not None
+    assert json["city"] is not None
+    assert json["state"] is not None
+    assert json["zip_code"] is not None
 
 
 def test_add_contact():
     testcontact = {
-        'id': '3',
         'first_name': 'John',
         'last_name': 'Smith',
         'address': '456 1st st',
@@ -39,4 +38,4 @@ def test_add_contact():
     }
     response = client.post("/contacts/", json=testcontact)
     assert response.status_code == 200
-    assert all(key in testcontact.keys() for key in response.json().keys())
+    assert all(key in response.json().keys() for key in testcontact.keys())
