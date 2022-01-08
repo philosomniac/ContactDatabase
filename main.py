@@ -1,14 +1,15 @@
 from datetime import datetime, timedelta
-from fastapi import FastAPI, Depends, HTTPException, status
+
+from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from pydantic.fields import T
-from sqlalchemy.orm import Session
-from database import SessionLocal, engine
-from passlib.context import CryptContext
 from jose import JWTError, jwt
+from passlib.context import CryptContext
+from sqlalchemy.orm import Session
+
 import crud
-import models
 import db_models
+import models
+from database import SessionLocal, engine
 
 SECRET_KEY = "a0c6fcdaf2c19e8d2f66db5d5ab300a212701e9f698e5fafc5ad67a7d7587cd6"
 ALGORITHM = "HS256"
@@ -20,14 +21,15 @@ app = FastAPI()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-fake_users_db = {
-    "johndoe": {
-        "username": "johndoe",
-        "hashed_password": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW"
-    }
-}
-
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 def verify_password(plain_password, hashed_password):
@@ -38,18 +40,14 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-def fake_hash_password(password: str):
-    return "fakehashed" + password
+# def get_user(db, username: str):
+#     if username in db:
+#         user_dict = db[username]
+#         return models.UserInDB(**user_dict)
 
 
-def get_user(db, username: str):
-    if username in db:
-        user_dict = db[username]
-        return models.UserInDB(**user_dict)
-
-
-def authenticate_user(fake_db, username: str, password: str):
-    user = get_user(fake_db, username)
+def authenticate_user(username: str, password: str, db: Session = Depends(get_db)):
+    user = crud.get_user(db, username)
     if not user:
         return False
     if not verify_password(password, user.hashed_password):
@@ -68,20 +66,12 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     return encoded_jwt
 
 
-def fake_decode_token(token):
-    user = get_user(fake_users_db, token)
-    return user
+# def fake_decode_token(token):
+#     user = get_user(fake_users_db, token)
+#     return user
 
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-async def get_current_user(token: str = Depends(oauth2_scheme)):
+async def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -96,16 +86,15 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         token_data = models.TokenData(username=username)
     except JWTError:
         raise credentials_exception
-    user = get_user(fake_users_db, username=token_data.username)
+    user = crud.get_user(db, username=token_data.username)
     if user is None:
         raise credentials_exception
     return user
 
 
 @app.post("/token", response_model=models.Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = authenticate_user(
-        fake_users_db, form_data.username, form_data.password)
+async def login_for_access_token(db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()):
+    user = authenticate_user(form_data.username, form_data.password, db)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -117,11 +106,6 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
-
-
-@app.get("/items/")
-async def read_items(token: str = Depends(oauth2_scheme)):
-    return {"token": token}
 
 
 @app.get("/users/me", response_model=models.User)
@@ -142,6 +126,6 @@ def read_contact(id: int, db: Session = Depends(get_db)):
     return db_contact
 
 
-@app.post("/contacts/", response_model=models.Contact)
+@app.post("/contacts", response_model=models.Contact)
 def create_contact(contact: models.ContactBase, db: Session = Depends(get_db)):
     return crud.create_contact(db=db, contact=contact)
