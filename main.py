@@ -16,6 +16,11 @@ db_initialize()
 app = FastAPI()
 
 
+@app.get("/")
+def read_root():
+    return {"msg": "Hello World"}
+
+
 @app.post("/token", response_model=models.Token)
 async def login_for_access_token(db: Session = Depends(deps.get_db), form_data: OAuth2PasswordRequestForm = Depends()):
     user = crud.authenticate_user(form_data.username, form_data.password, db)
@@ -38,12 +43,7 @@ async def read_users_me(current_user: models.User = Depends(deps.get_current_use
     return current_user
 
 
-@app.get("/")
-def read_root():
-    return {"msg": "Hello World"}
-
-
-@app.get("/contacts/{id}", response_model=models.Contact)
+@app.get("/contacts/{id}", response_model=models.Contact, dependencies=[Depends(deps.get_current_user)])
 def read_contact(id: int, db: Session = Depends(deps.get_db)):
     db_contact = crud.get_contact(db, contact_id=id)
     if db_contact is None:
@@ -51,6 +51,6 @@ def read_contact(id: int, db: Session = Depends(deps.get_db)):
     return db_contact
 
 
-@app.post("/contacts", response_model=models.Contact)
+@app.post("/contacts", response_model=models.Contact, dependencies=[Depends(deps.get_current_user)])
 def create_contact(contact: models.ContactBase, db: Session = Depends(deps.get_db)):
     return crud.create_contact(db=db, contact=contact)
