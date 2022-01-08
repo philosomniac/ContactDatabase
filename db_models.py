@@ -28,3 +28,10 @@ class Phone(Base):
     contact_id = Column(Integer, ForeignKey("contacts.id"))
 
     contact = relationship("Contact", back_populates="phones")
+
+
+class User(Base):
+    __tablename__ = 'users'
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(Integer, unique=True, index=True)
+    hashed_password = Column(String)
