@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 
 import models
 import db_models
+import security
 
 
 def get_contact(db: Session, contact_id: int) -> db_models.Contact:
@@ -18,3 +19,12 @@ def create_contact(db: Session, contact: models.ContactBase) -> db_models.Contac
 
 def get_user(db: Session, username: str) -> db_models.User:
     return db.query(db_models.User).filter(db_models.User.username == username).first()
+
+
+def authenticate_user(username: str, password: str, db: Session):
+    user = get_user(db, username)
+    if not user:
+        return False
+    if not security.verify_password(password, user.hashed_password):
+        return False
+    return user
