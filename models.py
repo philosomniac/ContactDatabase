@@ -1,5 +1,5 @@
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class User(BaseModel):
@@ -40,9 +40,11 @@ class ContactBase(BaseModel):
     last_name: str
     address: str
     city: str
-    state: str
-    zip_code: str
-    email: str
+    state: str = Field(
+        description="Two-character state abbreviation", min_length=2, max_length=2)
+    zip_code: str = Field(description="5-digit zip code",
+                          min_length=5, max_length=5)
+    email: str = Field(description="Email address", regex=".+@.+")
     phones: list[Phone] = []
 
 

@@ -1,8 +1,48 @@
 import json
 from fastapi.testclient import TestClient
-from models import Contact
+import models
+import db_models
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from database import Base
+from deps import get_db
 
 from main import app
+
+SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+)
+TestingSessionLocal = sessionmaker(
+    autocommit=False, autoflush=False, bind=engine)
+
+
+def override_get_db():
+    try:
+        db = TestingSessionLocal()
+        yield db
+    finally:
+        db.close()
+
+
+def initialize_test_db():
+    try:
+        db = TestingSessionLocal()
+        Base.metadata.drop_all(bind=engine)
+        Base.metadata.create_all(bind=engine)
+
+        test_user = db_models.User(id=1, username="johndoe",
+                                   hashed_password="$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW")
+        db.add(test_user)
+        db.commit()
+    finally:
+        db.close()
+
+
+app.dependency_overrides[get_db] = override_get_db
+
+initialize_test_db()
 
 client = TestClient(app)
 

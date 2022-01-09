@@ -6,7 +6,7 @@ import security
 
 
 def get_contact(db: Session, contact_id: int) -> db_models.Contact:
-    return db.query(db_models.Contact).filter(db_models.Contact.id == contact_id).first()
+    return db.get(db_models.Contact, contact_id)
 
 
 def create_contact(db: Session, contact: models.ContactBase) -> db_models.Contact:
@@ -14,6 +14,20 @@ def create_contact(db: Session, contact: models.ContactBase) -> db_models.Contac
     db.add(db_contact)
     db.commit()
     db.refresh(db_contact)
+    return db_contact
+
+
+def update_contact(db: Session, contact_id: int, contact: models.ContactBase) -> db_models.Contact:
+    db_contact = db.get(db_models.Contact, contact_id)
+    db_contact.__dict__.update(contact.dict())
+    db.commit()
+    return db_contact
+
+
+def delete_contact(db: Session, contact_id: int):
+    db_contact = db.get(db_models.Contact, contact_id)
+    db.delete(db_contact)
+    db.commit()
     return db_contact
 
 

@@ -43,6 +43,11 @@ async def read_users_me(current_user: models.User = Depends(deps.get_current_use
     return current_user
 
 
+@app.post("/contacts", response_model=models.Contact, dependencies=[Depends(deps.get_current_user)])
+def create_contact(contact: models.ContactBase, db: Session = Depends(deps.get_db)):
+    return crud.create_contact(db=db, contact=contact)
+
+
 @app.get("/contacts/{id}", response_model=models.Contact, dependencies=[Depends(deps.get_current_user)])
 def read_contact(id: int, db: Session = Depends(deps.get_db)):
     db_contact = crud.get_contact(db, contact_id=id)
@@ -51,6 +56,19 @@ def read_contact(id: int, db: Session = Depends(deps.get_db)):
     return db_contact
 
 
-@app.post("/contacts", response_model=models.Contact, dependencies=[Depends(deps.get_current_user)])
-def create_contact(contact: models.ContactBase, db: Session = Depends(deps.get_db)):
-    return crud.create_contact(db=db, contact=contact)
+@app.put("/contacts/{id}", response_model=models.Contact, dependencies=[Depends(deps.get_current_user)])
+def update_contact(id: int, contact: models.ContactBase, db: Session = Depends(deps.get_db)):
+    db_contact = crud.get_contact(db, contact_id=id)
+    if db_contact is None:
+        raise HTTPException(status_code=404, detail="Could not find contact")
+    db_contact = crud.update_contact(db, contact_id=id, contact=contact)
+    return db_contact
+
+
+@app.delete("/contacts/{id}", response_model=models.Contact, dependencies=[Depends(deps.get_current_user)])
+def delete_contact(id: int, db: Session = Depends(deps.get_db)):
+    db_contact = crud.get_contact(db, contact_id=id)
+    if db_contact is None:
+        raise HTTPException(status_code=404, detail="Could not find contact")
+    db_contact = crud.delete_contact(db, contact_id=id)
+    return db_contact
