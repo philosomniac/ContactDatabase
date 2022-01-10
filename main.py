@@ -48,27 +48,63 @@ def create_contact(contact: models.ContactCreate, db: Session = Depends(deps.get
     return crud.create_contact(db=db, contact=contact)
 
 
-@app.get("/contacts/{id}", response_model=models.Contact, dependencies=[Depends(deps.get_current_user)])
-def read_contact(id: int, db: Session = Depends(deps.get_db)):
-    db_contact = crud.get_contact(db, contact_id=id)
+@app.get("/contacts/{contact_id}", response_model=models.Contact, dependencies=[Depends(deps.get_current_user)])
+def read_contact(contact_id: int, db: Session = Depends(deps.get_db)):
+    db_contact = crud.get_contact(db, contact_id=contact_id)
     if db_contact is None:
         raise HTTPException(status_code=404, detail="Could not find contact")
     return db_contact
 
 
-@app.put("/contacts/{id}", response_model=models.Contact, dependencies=[Depends(deps.get_current_user)])
-def update_contact(id: int, contact: models.ContactBase, db: Session = Depends(deps.get_db)):
-    db_contact = crud.get_contact(db, contact_id=id)
+@app.put("/contacts/{contact_id}", response_model=models.Contact, dependencies=[Depends(deps.get_current_user)])
+def update_contact(contact_id: int, contact: models.ContactBase, db: Session = Depends(deps.get_db)):
+    db_contact = crud.get_contact(db, contact_id=contact_id)
     if db_contact is None:
         raise HTTPException(status_code=404, detail="Could not find contact")
-    db_contact = crud.update_contact(db, contact_id=id, contact=contact)
+    db_contact = crud.update_contact(
+        db, contact_id=contact_id, contact=contact)
     return db_contact
 
 
-@app.delete("/contacts/{id}", response_model=models.Contact, dependencies=[Depends(deps.get_current_user)])
-def delete_contact(id: int, db: Session = Depends(deps.get_db)):
-    db_contact = crud.get_contact(db, contact_id=id)
+@app.delete("/contacts/{contact_id}", response_model=models.Contact, dependencies=[Depends(deps.get_current_user)])
+def delete_contact(contact_id: int, db: Session = Depends(deps.get_db)):
+    db_contact = crud.get_contact(db, contact_id=contact_id)
     if db_contact is None:
         raise HTTPException(status_code=404, detail="Could not find contact")
-    db_contact = crud.delete_contact(db, contact_id=id)
+    db_contact = crud.delete_contact(db, contact_id=contact_id)
     return db_contact
+
+
+@app.post("/contacts/{contact_id}/phones", response_model=models.Phone, dependencies=[Depends(deps.get_current_user)])
+def create_phone(contact_id: int, phone: models.PhoneCreate, db: Session = Depends(deps.get_db)):
+    db_contact = crud.get_contact(db, contact_id=contact_id)
+    if db_contact is None:
+        raise HTTPException(status_code=404, detail="Could not find contact")
+    db_phone = crud.create_phone(db, contact_id=contact_id, phone=phone)
+    return db_phone
+
+
+@app.put("/contacts/{contact_id}/phones/{phone_id}", response_model=models.Phone, dependencies=[Depends(deps.get_current_user)])
+def update_phone(contact_id: int, phone_id: int, phone: models.PhoneBase, db: Session = Depends(deps.get_db)):
+    db_phone = crud.get_phone(db, phone_id=phone_id)
+    if db_phone is None:
+        raise HTTPException(status_code=404, detail="Could not find phone")
+    db_phone = crud.update_phone(db, phone_id=phone_id, phone=phone)
+    return db_phone
+
+
+@app.get("/contacts/{contact_id}/phones/{phone_id}", response_model=models.Phone, dependencies=[Depends(deps.get_current_user)])
+def get_phone(contact_id: int, phone_id: int, db: Session = Depends(deps.get_db)):
+    db_phone = crud.get_phone(db, phone_id=phone_id)
+    if db_phone is None:
+        raise HTTPException(status_code=404, detail="Could not find phone")
+    return db_phone
+
+
+@app.delete("/contacts/{contact_id}/phones/{phone_id}", response_model=models.Phone, dependencies=[Depends(deps.get_current_user)])
+def delete_phone(contact_id: int, phone_id: int, db: Session = Depends(deps.get_db)):
+    db_phone = crud.get_phone(db, phone_id=phone_id)
+    if db_phone is None:
+        raise HTTPException(status_code=404, detail="Could not find phone")
+    crud.delete_phone(db, phone_id=phone_id)
+    return db_phone

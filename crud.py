@@ -39,6 +39,33 @@ def delete_contact(db: Session, contact_id: int):
     return db_contact
 
 
+def create_phone(db: Session, contact_id: int, phone: models.PhoneCreate) -> db_models.Phone:
+    db_phone = db_models.Phone(**phone.dict())
+    db_phone.contact_id = contact_id
+    db.add(db_phone)
+    db.commit()
+    db.refresh(db_phone)
+    return db_phone
+
+
+def get_phone(db: Session, phone_id: int) -> db_models.Phone:
+    return db.get(db_models.Phone, phone_id)
+
+
+def update_phone(db: Session, phone_id: int, phone: models.PhoneBase) -> db_models.Phone:
+    db_phone = db.get(db_models.Phone, phone_id)
+    db_phone.__dict__.update(phone.dict())
+    db.commit()
+    return db_phone
+
+
+def delete_phone(db: Session, phone_id: int) -> db_models.Phone:
+    db_phone = db.get(db_models.Phone, phone_id)
+    db.delete(db_phone)
+    db.commit()
+    return db_phone
+
+
 def get_user(db: Session, username: str) -> db_models.User:
     return db.query(db_models.User).filter(db_models.User.username == username).first()
 

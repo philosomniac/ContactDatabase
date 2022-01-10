@@ -30,9 +30,12 @@ class PhoneBase(BaseModel):
         orm_mode = True
 
 
-class Phone(PhoneBase):
-    id: int
+class PhoneCreate(PhoneBase):
     contact_id: int
+
+
+class Phone(PhoneCreate):
+    id: int
 
     class Config:
         orm_mode = True
