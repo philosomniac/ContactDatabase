@@ -44,7 +44,7 @@ async def read_users_me(current_user: models.User = Depends(deps.get_current_use
 
 
 @app.post("/contacts", response_model=models.Contact, dependencies=[Depends(deps.get_current_user)])
-def create_contact(contact: models.ContactBase, db: Session = Depends(deps.get_db)):
+def create_contact(contact: models.ContactCreate, db: Session = Depends(deps.get_db)):
     return crud.create_contact(db=db, contact=contact)
 
 

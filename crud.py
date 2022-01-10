@@ -9,8 +9,7 @@ def get_contact(db: Session, contact_id: int) -> db_models.Contact:
     return db.get(db_models.Contact, contact_id)
 
 
-def create_contact(db: Session, contact: models.ContactBase) -> db_models.Contact:
-
+def create_contact(db: Session, contact: models.ContactCreate) -> db_models.Contact:
     # hacky workaround to create phones+contacts
     phones_to_add: list[models.PhoneBase] = []
     for phone in contact.phones:
@@ -28,7 +27,6 @@ def create_contact(db: Session, contact: models.ContactBase) -> db_models.Contac
 
 def update_contact(db: Session, contact_id: int, contact: models.ContactBase) -> db_models.Contact:
     db_contact = db.get(db_models.Contact, contact_id)
-    del contact.phones
     db_contact.__dict__.update(contact.dict())
     db.commit()
     return db_contact

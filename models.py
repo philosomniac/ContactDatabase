@@ -48,10 +48,14 @@ class ContactBase(BaseModel):
     zip_code: str = Field(description="5-digit zip code",
                           min_length=5, max_length=5)
     email: str = Field(description="Email address", regex=".+@.+")
+    pass
+
+
+class ContactCreate(ContactBase):
     phones: list[PhoneBase] = []
 
 
-class Contact(ContactBase):
+class Contact(ContactCreate):
     id: int
 
     phones: list[Phone] = []
