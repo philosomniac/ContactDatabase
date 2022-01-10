@@ -10,7 +10,16 @@ def get_contact(db: Session, contact_id: int) -> db_models.Contact:
 
 
 def create_contact(db: Session, contact: models.ContactBase) -> db_models.Contact:
+
+    # hacky workaround to create phones+contacts
+    phones_to_add: list[models.PhoneBase] = []
+    for phone in contact.phones:
+        phones_to_add.append(phone)
+    contact.phones = []
     db_contact = db_models.Contact(**contact.dict())
+    for phone in phones_to_add:
+        db_contact.phones.append(db_models.Phone(**phone.dict()))
+
     db.add(db_contact)
     db.commit()
     db.refresh(db_contact)

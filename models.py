@@ -26,6 +26,9 @@ class PhoneBase(BaseModel):
     phone_type: str
     phone_number: str
 
+    class Config:
+        orm_mode = True
+
 
 class Phone(PhoneBase):
     id: int
@@ -45,11 +48,13 @@ class ContactBase(BaseModel):
     zip_code: str = Field(description="5-digit zip code",
                           min_length=5, max_length=5)
     email: str = Field(description="Email address", regex=".+@.+")
-    phones: list[Phone] = []
+    phones: list[PhoneBase] = []
 
 
 class Contact(ContactBase):
     id: int
+
+    phones: list[Phone] = []
 
     class Config:
         orm_mode = True
