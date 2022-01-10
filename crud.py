@@ -27,8 +27,10 @@ def create_contact(db: Session, contact: models.ContactCreate) -> db_models.Cont
 
 def update_contact(db: Session, contact_id: int, contact: models.ContactBase) -> db_models.Contact:
     db_contact = db.get(db_models.Contact, contact_id)
-    db_contact.__dict__.update(contact.dict())
+    db.query(db_models.Contact).filter(
+        db_models.Contact.id == contact_id).update(contact.dict())
     db.commit()
+    db.refresh(db_contact)
     return db_contact
 
 
