@@ -28,6 +28,7 @@ def create_contact(db: Session, contact: models.ContactBase) -> db_models.Contac
 
 def update_contact(db: Session, contact_id: int, contact: models.ContactBase) -> db_models.Contact:
     db_contact = db.get(db_models.Contact, contact_id)
+    del contact.phones
     db_contact.__dict__.update(contact.dict())
     db.commit()
     return db_contact
