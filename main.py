@@ -48,6 +48,14 @@ def create_contact(contact: models.ContactCreate, db: Session = Depends(deps.get
     return crud.create_contact(db=db, contact=contact)
 
 
+@app.get("/contacts", response_model=list[models.Contact], dependencies=[Depends(deps.get_current_user)])
+def read_contacts(skip: int = 0, limit: int = 10, db: Session = Depends(deps.get_db)):
+    db_contacts = crud.get_contacts(db=db, skip=skip, limit=limit)
+    if len(db_contacts) < 1:
+        raise HTTPException(status_code=404, detail="No contacts present")
+    return db_contacts
+
+
 @app.get("/contacts/{contact_id}", response_model=models.Contact, dependencies=[Depends(deps.get_current_user)])
 def read_contact(contact_id: int, db: Session = Depends(deps.get_db)):
     db_contact = crud.get_contact(db, contact_id=contact_id)

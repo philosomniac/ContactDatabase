@@ -9,6 +9,10 @@ def get_contact(db: Session, contact_id: int) -> db_models.Contact:
     return db.get(db_models.Contact, contact_id)
 
 
+def get_contacts(db: Session, skip: int, limit: int) -> list[db_models.Contact]:
+    return db.query(db_models.Contact).offset(skip).limit(limit).all()
+
+
 def create_contact(db: Session, contact: models.ContactCreate) -> db_models.Contact:
     # hacky workaround to create phones+contacts
     phones_to_add: list[models.PhoneBase] = []

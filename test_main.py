@@ -225,3 +225,9 @@ def test_valid_phone_after_preprocessing(test_phone, valid_access_header):
     response = client.post("/contacts/1/phones",
                            json=test_phone, headers=valid_access_header)
     assert response.status_code == status.HTTP_200_OK
+
+
+def test_get_multiple_contacts(valid_access_header):
+    response = client.get('/contacts', headers=valid_access_header)
+    json = response.json()
+    assert len(json) > 1
