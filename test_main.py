@@ -4,7 +4,7 @@ import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
 
 import db_models
 import models
@@ -34,10 +34,8 @@ def override_get_db():
         db.close()
 
 
-def initialize_test_db(test_user, initial_contacts):
+def initialize_test_db(db: Session, test_user, initial_contacts):
     try:
-        db = TestingSessionLocal()
-
         db.add(db_models.User(**test_user))
         for contact in initial_contacts:
             for phone in contact['phones']:
@@ -49,7 +47,7 @@ def initialize_test_db(test_user, initial_contacts):
         db.close()
 
 
-initialize_test_db(initial_user, initial_contacts)
+initialize_test_db(TestingSessionLocal(), initial_user, initial_contacts)
 app.dependency_overrides[get_db] = override_get_db
 
 
