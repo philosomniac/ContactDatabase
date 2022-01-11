@@ -76,7 +76,7 @@ def delete_contact(contact_id: int, db: Session = Depends(deps.get_db)):
 
 
 @app.post("/contacts/{contact_id}/phones", response_model=models.Phone, dependencies=[Depends(deps.get_current_user)])
-def create_phone(contact_id: int, phone: models.PhoneCreate, db: Session = Depends(deps.get_db)):
+def create_phone(contact_id: int, phone: models.PhoneBase, db: Session = Depends(deps.get_db)):
     db_contact = crud.get_contact(db, contact_id=contact_id)
     if db_contact is None:
         raise HTTPException(status_code=404, detail="Could not find contact")

@@ -1,5 +1,5 @@
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 
 
 class User(BaseModel):
@@ -24,7 +24,13 @@ class TokenData(BaseModel):
 
 class PhoneBase(BaseModel):
     phone_type: str
-    phone_number: str
+    phone_number: str = Field(min_length=10, max_length=11)
+
+    @validator('phone_number', pre=True)
+    def validate_phone(cls, v):
+        filtered = filter(str.isdigit, v)
+        numeric = "".join(filtered)
+        return numeric
 
     class Config:
         orm_mode = True
@@ -47,9 +53,9 @@ class ContactBase(BaseModel):
     address: str
     city: str
     state: str = Field(
-        description="Two-character state abbreviation", min_length=2, max_length=2)
+        description="Two-character state abbreviation", min_length=2, max_length=2, regex="^\w{2}$")
     zip_code: str = Field(description="5-digit zip code",
-                          min_length=5, max_length=5)
+                          min_length=5, max_length=5, regex="^\d{5}$")
     email: str = Field(description="Email address", regex=".+@.+")
     pass
 

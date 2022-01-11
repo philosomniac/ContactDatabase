@@ -34,14 +34,14 @@ def update_contact(db: Session, contact_id: int, contact: models.ContactBase) ->
     return db_contact
 
 
-def delete_contact(db: Session, contact_id: int):
+def delete_contact(db: Session, contact_id: int) -> db_models.Contact:
     db_contact = db.get(db_models.Contact, contact_id)
     db.delete(db_contact)
     db.commit()
     return db_contact
 
 
-def create_phone(db: Session, contact_id: int, phone: models.PhoneCreate) -> db_models.Phone:
+def create_phone(db: Session, contact_id: int, phone: models.PhoneBase) -> db_models.Phone:
     db_phone = db_models.Phone(**phone.dict())
     db_phone.contact_id = contact_id
     db.add(db_phone)
@@ -72,7 +72,7 @@ def get_user(db: Session, username: str) -> db_models.User:
     return db.query(db_models.User).filter(db_models.User.username == username).first()
 
 
-def authenticate_user(username: str, password: str, db: Session):
+def authenticate_user(username: str, password: str, db: Session) -> db_models.User:
     user = get_user(db, username)
     if not user:
         return False
